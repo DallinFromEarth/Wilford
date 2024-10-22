@@ -1,3 +1,8 @@
+"""
+Copyright (c) 2024 ForestBlue Development. All Rights Reserved.
+This file is part of the "Wilford" program, which is licensed under the MIT License.
+View it on GitHub: https://github.com/DallinFromEarth/Wilford
+"""
 from bs4 import BeautifulSoup
 import re
 from src.network import network_get
