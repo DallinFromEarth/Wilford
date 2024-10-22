@@ -1,4 +1,3 @@
-import requests
 from bs4 import BeautifulSoup
 import re
 from src.network import network_get
@@ -7,39 +6,52 @@ BASE_CONFERENCE_URL = "https://www.churchofjesuschrist.org/study/general-confere
 BASE_SPEAKERS_URL = BASE_CONFERENCE_URL + "speakers/"
 
 
-def get_speakers_and_links():
-    response = network_get(BASE_SPEAKERS_URL)
+class Scraper:
+    def __init__(self):
+        self.speakers_and_links = {}
 
-    if response is None:
-        print("Something went wrong while loading the list of speakers from the internet\n")
-        return {}
+    def standardize_name_for_search(self, name):
+        return name.lower().replace(".", "")
 
-    # Create a BeautifulSoup object with the retrieved HTML content
-    soup = BeautifulSoup(response.content, 'html.parser')
+    def search_speakers(self, search_term):
+        speaker_list = []
+        search_term = self.standardize_name_for_search(search_term)
+        for key in self.speakers_and_links.keys():
+            if self.standardize_name_for_search(key).find(search_term) != -1:
+                speaker_list.append(key)
+        return speaker_list
 
-    # Find all the <a> tags with href matching the pattern /study/general-conference/speakers/*
-    speaker_links = soup.find_all('a', href=re.compile(r'^/study/general-conference/speakers/'))
 
-    speakers = {}
+    def load_speakers_and_links(self):
+        response = network_get(BASE_SPEAKERS_URL)
 
-    # Extract the speaker names and links
-    for link in speaker_links:
-        # Find the <h4> tag within the <a> tag
-        speaker_name_tag = link.find('h4')
+        if response is None:
+            print("Something went wrong while loading the list of speakers from the internet\n")
+            return {}
 
-        if speaker_name_tag:
-            # Extract the speaker name from the <h4> tag
-            speaker_name = speaker_name_tag.text.strip()
+        # Create a BeautifulSoup object with the retrieved HTML content
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-            # Extract the speaker link from the 'href' attribute of the <a> tag
-            speaker_link = link['href']
+        # Find all the <a> tags with href matching the pattern /study/general-conference/speakers/*
+        speaker_links = soup.find_all('a', href=re.compile(r'^/study/general-conference/speakers/'))
 
-            speakers[speaker_name] = speaker_link
+        speakers = {}
 
-            # print(f"Speaker: {speaker_name}")
-            # print(f"Link: {speaker_link}")
-            # print()
-        else:
-            print(f"No <h4> tag found within the <a> tag: {link}")
+        # Extract the speaker names and links
+        for link in speaker_links:
+            # Find the <h4> tag within the <a> tag
+            speaker_name_tag = link.find('h4')
 
-    return speakers
+            if speaker_name_tag:
+                # Extract the speaker name from the <h4> tag
+                speaker_name = speaker_name_tag.text.strip()
+
+                # Extract the speaker link from the 'href' attribute of the <a> tag
+                speaker_link = link['href']
+
+                speakers[speaker_name] = speaker_link
+            else:
+                #print(f"No <h4> tag found within the <a> tag: {link}")
+                continue
+
+        self.speakers_and_links = speakers

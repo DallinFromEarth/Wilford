@@ -25,7 +25,7 @@ def get_input(input_prompt="", can_skip=False):
         display_terms()
         return get_input(input_prompt, can_skip)
     elif field_lower == "quit":
-        close_program()
+        return close_program()
 
     return field
 
@@ -39,6 +39,11 @@ def show_help_menu():
     print("'help' - open the help menu (this)")
     print("'terms' - view the terms of using this program")
     print("'quit' - close the program (it will confirm before quiting)")
+    print()
+
+    print("MAIN MENU")
+    print("'speakers' - view the list of speakers")
+    print()
 
 
 def display_terms():
@@ -59,6 +64,8 @@ def close_program():
     if verification == 'y':
         print("Thank you for using Wilford")
         quit()
+    else:
+        return None
 
 
 def center_text(text):
