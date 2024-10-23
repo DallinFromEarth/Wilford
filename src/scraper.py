@@ -3,7 +3,6 @@ Copyright (c) 2024 ForestBlue Development. All Rights Reserved.
 This file is part of the "Wilford" program, which is licensed under the MIT License.
 View it on GitHub: https://github.com/DallinFromEarth/Wilford
 """
-import time
 from typing import List
 import json
 import base64
@@ -107,7 +106,6 @@ class Scraper:
                          unit="links",
                          ncols=80,
                          colour="yellow"):
-            time.sleep(0.01)
             conference_tag = link.find('h6')
             title_tag = link.findNext('h4')
 

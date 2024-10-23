@@ -5,7 +5,7 @@ View it on GitHub: https://github.com/DallinFromEarth/Wilford
 """
 from src.cli_utils import *
 from src.scraper import *
-from src.network import *
+from src.download import *
 
 
 def run_cli():
@@ -61,9 +61,17 @@ def download_cli(scraper, search_term=None):
     speaker_name = get_speaker_name(scraper, search_term)
     print(f"Speaker found: {speaker_name}")
 
-    skip_sustainings = get_boolean_input("Should talks that are just the sustaining of the general authorities be skipped?")
+    skip_sustainings = get_boolean_input("Skip the sustaining of the general authorities?")
 
     talks: List[TalkData] = scraper.get_talk_data_for_speaker(speaker_name, skip_sustainings, lambda s: print(make_italic(s)))
+
+    if skip_sustainings:
+        print(make_italic(f"Loaded data for {len(talks)} that were not GA sustainings"))
+
+    directory = download_talks(talks)
+
+    print(f"{len(talks)} successfully downloaded to {directory}\n")
+
 
 
 def get_speaker_name(scraper, previous=None):

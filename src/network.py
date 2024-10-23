@@ -4,11 +4,8 @@ This file is part of the "Wilford" program, which is licensed under the MIT Lice
 View it on GitHub: https://github.com/DallinFromEarth/Wilford
 """
 import os
-from pathlib import Path
 from urllib.parse import urlparse
-
 import requests
-from src.data_classes import *
 
 
 def network_get(url):
@@ -35,15 +32,12 @@ def network_get(url):
         return None
 
 
-def download_and_save(source: str, filename: str):
+def download_and_save_mp3(source: str, directory: str, filename: str = None):
     try:
         # Send a HEAD request first to check content type
         head = requests.head(source)
         if 'audio/mpeg' not in head.headers.get('content-type', '').lower():
             raise ValueError("URL does not point to an MP3 file")
-
-        # Get the downloads folder path
-        downloads_path = str(Path.home() / "Downloads")
 
         # If no filename provided, extract from URL
         if not filename:
@@ -54,7 +48,7 @@ def download_and_save(source: str, filename: str):
             filename += '.mp3'
 
         # Full path for the file
-        file_path = os.path.join(downloads_path, filename)
+        file_path = os.path.join(directory, filename)
 
         # Download the file with streaming
         response = requests.get(source, stream=True)
