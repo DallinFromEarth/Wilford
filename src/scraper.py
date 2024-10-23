@@ -3,25 +3,19 @@ Copyright (c) 2024 ForestBlue Development. All Rights Reserved.
 This file is part of the "Wilford" program, which is licensed under the MIT License.
 View it on GitHub: https://github.com/DallinFromEarth/Wilford
 """
-from dataclasses import dataclass
+import time
 from typing import List
 import json
 import base64
 from bs4 import BeautifulSoup
 import re
 from src.network import network_get
+from src.data_classes import *
+from typing import Callable
+from tqdm import tqdm
 
 BASE_CHURCH_URL = "https://www.churchofjesuschrist.org"
 BASE_SPEAKERS_URL = BASE_CHURCH_URL + "/study/general-conference/speakers/"
-
-
-@dataclass
-class TalkData:
-    title: str
-    speaker: str
-    conference: str
-    page_link: str
-    audio_link: str
 
 
 class Scraper:
@@ -75,8 +69,11 @@ class Scraper:
 
         self.speakers_links = speakers
 
-    def get_talk_data_for_speaker(self, speaker_name: str, skip_sustainings: bool = False) -> List[TalkData]:
+    def get_talk_data_for_speaker(self, speaker_name: str, skip_sustainings: bool = False, print_progress: Callable[[str], any] = ()) -> List[TalkData]:
+        print_progress(f"loading talk data for {speaker_name}...")
+
         if speaker_name in self.speakers_to_talks:
+            print_progress(f"Talk data already loaded for {speaker_name}")
             if skip_sustainings:
                 return [talk for talk in self.speakers_to_talks[speaker_name] if
                         not self.is_sustaining_talk(talk.title)]
@@ -99,9 +96,18 @@ class Scraper:
         talk_page_links = soup.find_all('a', href=re.compile(
             r'/study/general-conference/(19[7-9]\d|2\d{3})/(0[1-9]|1[0-2])/[\w-]+'))
 
+        talk_count = len(talk_page_links)
+        print_progress(f"Found {talk_count} talks by {speaker_name}")
+
         talk_list = []
 
-        for link in talk_page_links:
+        for link in tqdm(talk_page_links,
+                         desc="Gathering audio links",
+                         total=len(talk_page_links),
+                         unit="links",
+                         ncols=80,
+                         colour="yellow"):
+            time.sleep(0.01)
             conference_tag = link.find('h6')
             title_tag = link.findNext('h4')
 
@@ -119,9 +125,6 @@ class Scraper:
                     page_link=talk_page_link,
                     audio_link=audio_link
                 ))
-
-            else:
-                continue
 
         self.speakers_to_talks[speaker_name] = talk_list
         if skip_sustainings:
