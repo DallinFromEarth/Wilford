@@ -32,7 +32,8 @@ def get_input(input_prompt="", can_skip=False):
         display_terms()
         return get_input(input_prompt, can_skip)
     elif field_lower == "quit":
-        return close_program()
+        close_program()
+        return get_input(input_prompt, can_skip)
 
     return field
 
@@ -62,6 +63,17 @@ def show_help_menu():
     print("'speakers {name}' - search the list of speakers")
     print("'download' - open the download dialogue to download conference talks")
     print("'download {name}' - open the download dialogue for that speaker")
+    print("'config' - open the config menu")
+    print()
+
+    print("DOWNLOAD MENU")
+    print(make_italic("The download menu will step you through what you need to type"))
+    print()
+
+    print("CONFIG MENU")
+    print("'view' - view the full set of config settings")
+    print("'default' - reset config to default settings")
+    print()
 
 
 def display_terms():

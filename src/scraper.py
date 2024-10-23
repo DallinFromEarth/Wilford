@@ -3,11 +3,14 @@ Copyright (c) 2024 ForestBlue Development. All Rights Reserved.
 This file is part of the "Wilford" program, which is licensed under the MIT License.
 View it on GitHub: https://github.com/DallinFromEarth/Wilford
 """
-from typing import List
+import time
+from typing import List, Tuple
 import json
 import base64
 from bs4 import BeautifulSoup
 import re
+
+from src.config import get_config
 from src.network import network_get
 from src.data_classes import *
 from typing import Callable
@@ -68,28 +71,28 @@ class Scraper:
 
         self.speakers_links = speakers
 
-    def get_talk_data_for_speaker(self, speaker_name: str, skip_sustainings: bool = False, print_progress: Callable[[str], any] = ()) -> List[TalkData]:
+    def get_talk_data_for_speaker(self, speaker_name: str, print_progress: Callable[[str], any] = ()) -> Tuple[List[TalkData], int]:
+        skip_sustainings = get_config().get("skip_sustainings")
         print_progress(f"loading talk data for {speaker_name}...")
 
         if speaker_name in self.speakers_to_talks:
             print_progress(f"Talk data already loaded for {speaker_name}")
             if skip_sustainings:
-                return [talk for talk in self.speakers_to_talks[speaker_name] if
-                        not self.is_sustaining_talk(talk.title)]
+                return [talk for talk in self.speakers_to_talks[speaker_name] if not self.is_sustaining_talk(talk.title)], len(self.speakers_to_talks[speaker_name])
             else:
-                return self.speakers_to_talks[speaker_name]
+                return self.speakers_to_talks[speaker_name], len(self.speakers_to_talks[speaker_name])
 
         if speaker_name in self.speakers_links:
             link = self.speakers_links[speaker_name]
         else:
             print("Invalid speaker name, something went wrong")
-            return []
+            return [], 0
 
         response = network_get(BASE_CHURCH_URL + link)
 
         if response is None:
             print("Something went wrong while loading the list of speakers from the internet\n")
-            return []
+            return [], 0
 
         soup = BeautifulSoup(response.content, 'html.parser')
         talk_page_links = soup.find_all('a', href=re.compile(
@@ -97,6 +100,7 @@ class Scraper:
 
         talk_count = len(talk_page_links)
         print_progress(f"Found {talk_count} talks by {speaker_name}")
+        time.sleep(0.01) # just here because the progress bar renders too fast sometimes
 
         talk_list = []
 
@@ -126,9 +130,9 @@ class Scraper:
 
         self.speakers_to_talks[speaker_name] = talk_list
         if skip_sustainings:
-            return [talk for talk in talk_list if not self.is_sustaining_talk(talk.title)]
+            return [talk for talk in talk_list if not self.is_sustaining_talk(talk.title)], len(talk_list)
         else:
-            return talk_list
+            return talk_list, len(talk_list)
 
     def is_sustaining_talk(self, title: str) -> bool:
         if title.startswith("Sustaining of General Authorities, Area Seventies, and General Officers"):
