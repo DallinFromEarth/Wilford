@@ -61,7 +61,7 @@ def show_help_menu():
     print("'speakers' - view the list of speakers")
     print("'speakers {name}' - search the list of speakers")
     print("'download' - open the download dialogue to download conference talks")
-    print()
+    print("'download {name}' - open the download dialogue for that speaker")
 
 
 def display_terms():

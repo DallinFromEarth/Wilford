@@ -44,25 +44,27 @@ def cli_loop(scraper):
                     print(speaker)
                 print(make_italic(f"Found {len(speakers_list)} speakers"))
             elif input_words[0] == "download":
-                download_cli(scraper)
+                if len(input_words) > 1:
+                    download_cli(scraper, " ".join(input_words[1:]))
+                else:
+                    download_cli(scraper)
             else:
                 print("I'm not exactly sure what you said. Type 'help' for help")
     except ReturnToMainMenu:
         cli_loop(scraper)
 
 
-def download_cli(scraper):
+def download_cli(scraper, search_term=None):
     print("[Download Menu]")
 
-    speaker_name = get_speaker_name(scraper)
+    speaker_name = get_speaker_name(scraper, search_term)
     print(f"Speaker found: {speaker_name}")
 
     skip_sustainings = get_boolean_input("Should talks that are just the sustaining of the general authorities be skipped?")
 
-    scraper.get_talk_pages_for_speaker(speaker_name, skip_sustainings)
+    talks: List[TalkData] = scraper.get_talk_data_for_speaker(speaker_name, skip_sustainings)
 
-
-
+    print(make_italic(f"Found {len(talks)} talks by {speaker_name}"))
 
 
 def get_speaker_name(scraper, previous=None):
