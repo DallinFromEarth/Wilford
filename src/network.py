@@ -28,3 +28,7 @@ def network_get(url):
             print("An unknown error occurred.")
 
         return None
+
+
+def download_and_save(source: str, destination_folder: str, file_name: str):
+    pass

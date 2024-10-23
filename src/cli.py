@@ -62,9 +62,12 @@ def download_cli(scraper, search_term=None):
 
     skip_sustainings = get_boolean_input("Should talks that are just the sustaining of the general authorities be skipped?")
 
+    print(make_italic(f"loading talk data for {speaker_name}..."))
     talks: List[TalkData] = scraper.get_talk_data_for_speaker(speaker_name, skip_sustainings)
 
     print(make_italic(f"Found {len(talks)} talks by {speaker_name}"))
+
+
 
 
 def get_speaker_name(scraper, previous=None):
