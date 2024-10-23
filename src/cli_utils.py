@@ -18,6 +18,13 @@ def get_input(input_prompt="", can_skip=False):
     if (not can_skip) and field == "":
         print("No input provided")
         return get_input(input_prompt, can_skip)
+    elif (field_lower == "home") or (field_lower == "main"):
+        print("\n\n\n")
+        print("!!! Returning to the main menu !!!")
+        raise ReturnToMainMenu
+    elif field_lower == "restart":
+        restart_program()
+        return get_input(input_prompt, can_skip)
     elif field_lower == "help":
         show_help_menu()
         return get_input(input_prompt, can_skip)
@@ -30,12 +37,21 @@ def get_input(input_prompt="", can_skip=False):
     return field
 
 
+def get_boolean_input(input_prompt):
+    print(input_prompt)
+    verification = get_input("y -> yes, anything else -> no", True)
+    return verification == 'y'
+
+
 def show_help_menu():
     print("=" * 21)
     print("  Wilford Help Menu")
     print("=" * 21 + "\n")
 
     print("BASICS")
+    print(make_italic("*these can be called anytime*"))
+    print("'home' or 'main' - return to the main menu")
+    print("'restart' - restart the app")
     print("'help' - open the help menu (this)")
     print("'terms' - view the terms of using this program")
     print("'quit' - close the program (it will confirm before quiting)")
@@ -43,6 +59,8 @@ def show_help_menu():
 
     print("MAIN MENU")
     print("'speakers' - view the list of speakers")
+    print("'speakers {name}' - search the list of speakers")
+    print("'download' - open the download dialogue to download conference talks")
     print()
 
 
@@ -59,11 +77,18 @@ def display_terms():
 
 
 def close_program():
-    print("Are you sure you want to quit?")
-    verification = get_input("y -> yes, anything else -> no", True)
-    if verification == 'y':
+    verification = get_boolean_input("Are you sure you want to quit?")
+    if verification:
         print("Thank you for using Wilford")
         quit()
+    else:
+        return None
+
+
+def restart_program():
+    verification = get_boolean_input("Are you sure you want to restart?")
+    if verification:
+        raise RestartApp
     else:
         return None
 
@@ -80,3 +105,11 @@ def print_centered(text):
 
 def make_italic(text):
     return ITALIC_START + text + ITALIC_END
+
+
+class ReturnToMainMenu(Exception):
+    pass
+
+
+class RestartApp(Exception):
+    pass
