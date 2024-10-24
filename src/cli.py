@@ -29,6 +29,7 @@ def run_cli():
 def cli_loop(scraper):
     try:
         while True:
+            set_context("main")
             input = get_input("[Main Menu]")
             if input is None:
                 continue
@@ -45,11 +46,13 @@ def cli_loop(scraper):
                     print(speaker)
                 print(make_italic(f"Found {len(speakers_list)} speakers"))
             elif input_words[0] == "download":
+                set_context("download")
                 if len(input_words) > 1:
                     download_cli(scraper, " ".join(input_words[1:]))
                 else:
                     download_cli(scraper)
             elif input_words[0] == "config":
+                set_context("config")
                 config_cli()
             else:
                 print("I'm not exactly sure what you said. Type 'help' for help")
@@ -62,6 +65,11 @@ def download_cli(scraper, search_term=None):
 
     speaker_name = get_speaker_name(scraper, search_term)
     print(f"Speaker found: {speaker_name}")
+
+    if get_config().get("confirm_load_links") and not scraper.talk_data_loaded_for_speaker(speaker_name):
+        confirm_load = get_boolean_input(f"Confirm you want to load the talk data for {speaker_name}. " + make_italic("It could take a while if they have a lot of talks."))
+        if not confirm_load:
+            return
 
     result: Tuple[List[TalkData], int] = scraper.get_talk_data_for_speaker(speaker_name, lambda s: print(make_italic(s)))
     talks, count_by_speaker = result

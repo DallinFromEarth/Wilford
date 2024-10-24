@@ -9,6 +9,13 @@ import shutil
 ITALIC_START = '\x1B[3m'
 ITALIC_END = '\x1B[0m'
 
+CONTEXT: str = ""
+
+
+def set_context(context:str):
+    global CONTEXT
+    CONTEXT = context
+
 
 def get_input(input_prompt="", can_skip=False):
     field = input(input_prompt + "\n> ")
@@ -49,31 +56,36 @@ def show_help_menu():
     print("  Wilford Help Menu")
     print("=" * 21 + "\n")
 
-    print("BASICS")
+    print("UNIVERSAL")
     print(make_italic("*these can be called anytime*"))
     print("'home' or 'main' - return to the main menu")
     print("'restart' - restart the app")
-    print("'help' - open the help menu (this)")
+    print("'help' - view the available commands")
     print("'terms' - view the terms of using this program")
     print("'quit' - close the program (it will confirm before quiting)")
     print()
 
-    print("MAIN MENU")
-    print("'speakers' - view the list of speakers")
-    print("'speakers {name}' - search the list of speakers")
-    print("'download' - open the download dialogue to download conference talks")
-    print("'download {name}' - open the download dialogue for that speaker")
-    print("'config' - open the config menu")
-    print()
+    if CONTEXT == "main":
+        print("MAIN MENU")
+        print("'speakers' - view the list of speakers")
+        print("'speakers {name}' - search the list of speakers")
+        print("'download' - open the download dialogue to download conference talks")
+        print("'download {name}' - open the download dialogue for that speaker")
+        print("'config' - open the config menu")
+        print()
 
-    print("DOWNLOAD MENU")
-    print(make_italic("The download menu will step you through what you need to type"))
-    print()
+    elif CONTEXT == "download":
+        print("DOWNLOAD MENU")
+        print(make_italic("The download menu will step you through what you need to type"))
+        print()
 
-    print("CONFIG MENU")
-    print("'view' - view the full set of config settings")
-    print("'default' - reset config to default settings")
-    print()
+    elif CONTEXT == "config":
+        print("CONFIG MENU")
+        print("'view' - view the full set of config settings")
+        print("'default' - reset config to default settings")
+        print("'set' - set a config value " + make_italic("(it will then walk you through setting a config value)"))
+        print("'set {config value}' - set that specific config value")
+        print()
 
 
 def display_terms():

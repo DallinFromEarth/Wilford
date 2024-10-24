@@ -81,6 +81,7 @@ class Config:
             'skip_sustainings': True,
             'file_naming_convention': "speaker-date-title",
             'confirm_download': True,
+            'confirm_load_links': True,
         }
 
     def to_string(self):

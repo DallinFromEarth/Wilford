@@ -71,6 +71,9 @@ class Scraper:
 
         self.speakers_links = speakers
 
+    def talk_data_loaded_for_speaker(self, speaker_name) -> bool:
+        return speaker_name in self.speakers_to_talks
+
     def get_talk_data_for_speaker(self, speaker_name: str, print_progress: Callable[[str], any] = ()) -> Tuple[List[TalkData], int]:
         skip_sustainings = get_config().get("skip_sustainings")
         print_progress(f"loading talk data for {speaker_name}...")
