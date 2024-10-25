@@ -3,21 +3,35 @@ name: Build Executables
 on:
   push:
     tags:
-      - 'v*' # Trigger on version tags
+      - 'v*'
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: ['3.10']
+        include:
+          - os: windows-latest
+            artifact_name: wilford-windows
+          - os: ubuntu-latest
+            artifact_name: wilford-linux
+          - os: macos-latest
+            artifact_name: wilford-macos
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -29,31 +43,27 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            pyinstaller --onefile --name wilford-windows main.py
-          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            pyinstaller --onefile --name wilford-linux main.py
-          else
-            pyinstaller --onefile --name wilford-macos main.py
-          fi
+          pyinstaller --onefile --name "${{ matrix.artifact_name }}" main.py
+        shell: bash
+
+      - name: Set Unix Permissions
+        if: matrix.os != 'windows-latest'
+        run: |
+          chmod +x "dist/${{ matrix.artifact_name }}"
+          ls -l "dist/${{ matrix.artifact_name }}"
         shell: bash
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: wilford-${{ matrix.os }}
-          path: |
-            dist/wilford-windows.exe
-            dist/wilford-linux
-            dist/wilford-macos
+          name: ${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+          path: dist/${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+          permissions: 0755
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: |
-            dist/wilford-windows.exe
-            dist/wilford-linux
-            dist/wilford-macos
+          files: dist/${{ matrix.artifact_name }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

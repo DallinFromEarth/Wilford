@@ -4,6 +4,7 @@ This file is part of the "Wilford" program, which is licensed under the MIT Lice
 View it on GitHub: https://github.com/DallinFromEarth/Wilford
 """
 import shutil
+import sys
 
 # ANSI escape codes
 ITALIC_START = '\x1B[3m'
@@ -18,37 +19,47 @@ def set_context(context:str):
 
 
 def get_input(input_prompt="", can_skip=False):
-    field = input(input_prompt + "\n> ")
-    field = field.strip()
-    field_lower = field.lower()
+    try:
+        field = input(input_prompt + "\n> ").strip()
+        field_lower = field.lower()
 
-    if (not can_skip) and field == "":
-        print("No input provided")
+        if (not can_skip) and field == "":
+            print("No input provided")
+            return get_input(input_prompt, can_skip)
+        elif (field_lower == "home") or (field_lower == "main"):
+            print("\n\n\n")
+            print("!!! Returning to the main menu !!!")
+            raise ReturnToMainMenu
+        elif field_lower == "restart":
+            restart_program()
+            return get_input(input_prompt, can_skip)
+        elif field_lower == "help":
+            show_help_menu()
+            return get_input(input_prompt, can_skip)
+        elif field_lower == "terms":
+            display_terms()
+            return get_input(input_prompt, can_skip)
+        elif field_lower == "quit":
+            close_program()
+            return get_input(input_prompt, can_skip)
+
+        return field
+    except EOFError:
+        print("\nError reading input. Please try again.")
         return get_input(input_prompt, can_skip)
-    elif (field_lower == "home") or (field_lower == "main"):
-        print("\n\n\n")
-        print("!!! Returning to the main menu !!!")
-        raise ReturnToMainMenu
-    elif field_lower == "restart":
-        restart_program()
-        return get_input(input_prompt, can_skip)
-    elif field_lower == "help":
-        show_help_menu()
-        return get_input(input_prompt, can_skip)
-    elif field_lower == "terms":
-        display_terms()
-        return get_input(input_prompt, can_skip)
-    elif field_lower == "quit":
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user")
         close_program()
         return get_input(input_prompt, can_skip)
 
-    return field
-
-
 def get_boolean_input(input_prompt):
-    print(input_prompt)
-    verification = get_input("y -> yes, anything else -> no", True)
-    return verification == 'y'
+    try:
+        print(input_prompt)
+        verification = get_input("y -> yes, anything else -> no", True)
+        return verification.lower().strip() == 'y'
+    except Exception as e:
+        print(f"Error getting boolean input: {e}")
+        return False
 
 
 def show_help_menu():
@@ -101,12 +112,16 @@ def display_terms():
 
 
 def close_program():
-    verification = get_boolean_input("Are you sure you want to quit?")
-    if verification:
-        print("Thank you for using Wilford")
-        quit()
-    else:
-        return None
+    try:
+        verification = get_boolean_input("Are you sure you want to quit?")
+        if verification:
+            print("Thank you for using Wilford")
+            sys.exit(0)
+        else:
+            return None
+    except Exception as e:
+        print(f"Error during program closure: {e}")
+        sys.exit(1)
 
 
 def restart_program():

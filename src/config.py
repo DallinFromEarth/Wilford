@@ -40,9 +40,9 @@ class Config:
 
     def _get_config_dir(self) -> Path:
         if os.name == 'nt':  # Windows
-            base_dir = Path(os.getenv('APPDATA', ''))
+            base_dir = Path(os.path.expanduser('~')) / 'AppData' / 'Roaming'
         else:  # Unix-like
-            base_dir = Path.home() / '.config'
+            base_dir = Path(os.path.expanduser('~')) / '.config'
 
         config_dir = base_dir / self.app_name
         config_dir.mkdir(parents=True, exist_ok=True)
@@ -51,7 +51,7 @@ class Config:
     def load(self) -> None:
         try:
             if self.config_file.exists():
-                with open(self.config_file, 'r') as f:
+                with open(self.config_file, 'r', encoding='utf-8') as f:
                     stored_config = json.load(f)
                     # Start with defaults
                     self.set_defaults()
@@ -69,10 +69,12 @@ class Config:
     def save(self) -> None:
         """Save current configuration to disk."""
         try:
-            with open(self.config_file, 'w') as f:
+            self.config_dir.mkdir(parents=True, exist_ok=True)
+            with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(self._config, f, indent=2)
         except IOError as e:
-            raise ConfigurationError(f"Error saving config: {e}")
+            print(f"Error saving config: {e}")
+            # Don't raise error, just notify user
 
     def set_defaults(self) -> None:
         """Set default configuration values."""
