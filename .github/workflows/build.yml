@@ -1,0 +1,59 @@
+name: Build Executables
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        python-version: ['3.10']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            pyinstaller --onefile --name wilford-windows main.py
+          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            pyinstaller --onefile --name wilford-linux main.py
+          else
+            pyinstaller --onefile --name wilford-macos main.py
+          fi
+        shell: bash
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: wilford-${{ matrix.os }}
+          path: |
+            dist/wilford-windows.exe
+            dist/wilford-linux
+            dist/wilford-macos
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/wilford-windows.exe
+            dist/wilford-linux
+            dist/wilford-macos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
