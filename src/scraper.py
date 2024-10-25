@@ -75,7 +75,7 @@ class Scraper:
         return speaker_name in self.speakers_to_talks
 
     def get_talk_data_for_speaker(self, speaker_name: str, print_progress: Callable[[str], any] = ()) -> Tuple[List[TalkData], int]:
-        skip_sustainings = get_config().get("skip_sustainings")
+        skip_sustainings: bool = get_config().get("skip_sustainings") == "True"
         print_progress(f"loading talk data for {speaker_name}...")
 
         if speaker_name in self.speakers_to_talks:

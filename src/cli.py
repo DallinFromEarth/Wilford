@@ -66,7 +66,7 @@ def download_cli(scraper, search_term=None):
     speaker_name = get_speaker_name(scraper, search_term)
     print(f"Speaker found: {speaker_name}")
 
-    if get_config().get("confirm_load_links") and not scraper.talk_data_loaded_for_speaker(speaker_name):
+    if (get_config().get("confirm_load_links") == "True") and not scraper.talk_data_loaded_for_speaker(speaker_name):
         confirm_load = get_boolean_input(f"Confirm you want to load the talk data for {speaker_name}. " + make_italic("It could take a while if they have a lot of talks."))
         if not confirm_load:
             return
@@ -77,7 +77,7 @@ def download_cli(scraper, search_term=None):
     if len(talks) != count_by_speaker:
         print(make_italic(f"{count_by_speaker - len(talks)} will be skipped from downloading because they are GA sustainings. (you can change this in the config)"))
 
-    if get_config().get("confirm_download"):
+    if get_config().get("confirm_download") == "True":
         confirm_download = get_boolean_input("Confirm you want to download these talks" + make_italic(" (you can disable this confirmation in the config)"))
         if not confirm_download:
             print("Canceling download")
@@ -149,6 +149,9 @@ def set_config_cli(config: Config, input_words: List[str]):
         print("It must be set to EXACTLY 'True' or 'False', otherwise you'll break the program. " + make_italic("This is just a student project."))
     elif config_to_change == "confirm_download":
         print("If 'True', then you will be prompted to confirm before the downloader starts.")
+        print("It must be set to EXACTLY 'True' or 'False', otherwise you'll break the program. " + make_italic("This is just a student project."))
+    elif config_to_change == "confirm_load_links":
+        print("If 'True', then you will be prompted to confirm before the webparser starts gathering talk data.")
         print("It must be set to EXACTLY 'True' or 'False', otherwise you'll break the program. " + make_italic("This is just a student project."))
     elif config_to_change == "file_naming_convention":
         print("Determines how to name the audio files when downloaded")
